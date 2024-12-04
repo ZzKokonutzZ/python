@@ -34,7 +34,7 @@ for i in range(18):
 t=0
 while 1 :
     t+=0.005
-    screen.fill((0,0,0))
+    screen.fill((255,255,255))
     # temp_vecs=[]
     # for i in range(18) :
     #     temp_vec=pg.Vector3(0)
@@ -52,12 +52,12 @@ while 1 :
         
         points[i][1]=np.cos(0.001)*points[i][1]-np.sin(0.001)*points[i][2]
         points[i][2]=np.sin(0.001)*points[i][1]+np.cos(0.001)*points[i][2]
-        pg.draw.aaline(screen,(200,200,200),(250-points[i][0],250-points[i][1]),(250+points[i][0],250+points[i][1]))
+        pg.draw.aaline(screen,(0,0,0),(250-points[i][0],250-points[i][1]),(250+points[i][0],250+points[i][1]))
     
     for i in range(18) :
         for ii in range(18):
             
-            pg.draw.aaline(screen,(255,255,255),(250-np.sin(t+i)*points[i][0],250-np.sin(t+i)*points[i][1]),(250-np.sin(t+ii)*points[ii][0],250-np.sin(t+ii)*points[ii][1]))
+            pg.draw.aaline(screen,(0,0,0),(250-points[i][0],250-points[i][1]),(250-points[ii][0],250-points[ii][1]))
     pg.display.update()
     
     clock.tick(60)
