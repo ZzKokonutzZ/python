@@ -28,19 +28,7 @@ blocks={
     "t_r_angle.png":[0,0,"l","b"],
     "t_l_angle.png":[0,"b","r",0],
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    "full_wall.png":[1,1,1,1],
+    "full_wall.png":[1,1,1,1]
     
 
 }
@@ -111,6 +99,7 @@ def update_grid(i,j) :
     else :
         grid[i,j]=[holder[floor((random())*(len(holder)))]]
     return t
+
 def reduce_grid(i,j) :
     t=0
     holder=deepcopy(grid[i,j])
@@ -179,20 +168,26 @@ for i in range(10) :
 
 k=0
 l=0
+side=0
+vertical=0
+minL=0
+maxL=11
+minl=0
+maxl=11
 while 1 :
     screen.fill((0,0,0))
     gen=[]
-    for i in range(10) :
-        for j in range(10) :
+    for i in range(11) :
+        for j in range(11) :
             new=0
             try :
-                grid[i+k,j+l]
+                grid[i+k//16,j+l//16]
             except :
-                gen.append([i+k,j+l])
+                gen.append([i+k//16,j+l//16])
             else :
                 for e in blocks :
-                    if blocks[e]==grid[i+k,j+l][0] :
-                        screen.blit(sprites[e],(i*64,j*64))
+                    if blocks[e]==grid[i+k//16,j+l//16][0] :
+                        screen.blit(sprites[e],(i*64-(4*(k%16)),j*64-(4*(l%16))))
     pg.display.flip()
     for e in gen :
         grid[e[0],e[1]]=[]
@@ -284,19 +279,38 @@ while 1 :
             
     pg.display.flip()
     
+    if side==1 :
+        k+=1
+    elif side==-1 :
+        k-=1
+    
+    if vertical==1 :
+        l+=1
+    elif vertical==-1 :
+        l-=1
+    
     for event in pg.event.get() :
         if event.type==pg.KEYDOWN :
             if event.key==pg.K_LEFT :
-                k-=1
+                side-=1
             if event.key==pg.K_RIGHT :
-                k+=1
+                side+=1
             if event.key==pg.K_UP :
-                l-=1
+                vertical-=1
             if event.key==pg.K_DOWN :
-                l+=1
+                vertical+=1
             if event.key==pg.K_ESCAPE :
                 pg.quit()
                 sys.exit()
+        if event.type==pg.KEYUP :
+            if event.key==pg.K_LEFT :
+                side+=1
+            if event.key==pg.K_RIGHT :
+                side-=1
+            if event.key==pg.K_UP :
+                vertical+=1
+            if event.key==pg.K_DOWN :
+                vertical-=1
 
         if event.type==pg.QUIT :
             pg.quit()

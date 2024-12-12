@@ -13,18 +13,14 @@ def send(msg,channel) :
     print("[SENDING]")
     print(msg)
     msg=pickle.dumps(msg)
-    print(msg)
     header=str(len(msg)).encode(FORMAT)+b' '*(HEADER-len(str(len(msg)).encode(FORMAT)))
-    print(msg)
     channel.send(header)
-    print(msg)
     channel.send(msg)
 
 def recieve(channel) :
     print("[RECIEVING]")
     size=int(channel.recv(HEADER).decode(FORMAT))
     msg=channel.recv(size)
-    print(msg)
     msg=pickle.loads(msg)
     return msg
 
