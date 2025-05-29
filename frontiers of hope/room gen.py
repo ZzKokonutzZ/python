@@ -30,30 +30,33 @@ blocks={
     
 
 }
-fill=3
+fill=10
+walls=10
+platform=10
+void=10
 distribution={
     
-    "empty.png":1,
+    "empty.png":void,
     
-    "l_platform.png":0.5,
-    "platform.png":0.5,
-    "r_platform.png":0.5,
+    "l_platform.png":platform,
+    "platform.png":platform,
+    "r_platform.png":platform,
     
     
-    "b_l_corner.png":fill,
-    "b_r_corner.png":fill,
-    "t_r_corner.png":fill,
-    "t_l_corner.png":fill,
+    "b_l_corner.png":walls,
+    "b_r_corner.png":walls,
+    "t_r_corner.png":walls,
+    "t_l_corner.png":walls,
     
-    "l_wall.png":fill,
-    "r_wall.png":fill,
-    "floor.png":fill,
-    "ceiling.png":fill,
+    "l_wall.png":walls,
+    "r_wall.png":walls,
+    "floor.png":walls,
+    "ceiling.png":walls,
     
-    "b_l_angle.png":fill,
-    "b_r_angle.png":fill,
-    "t_r_angle.png":fill,
-    "t_l_angle.png":fill,
+    "b_l_angle.png":walls,
+    "b_r_angle.png":walls,
+    "t_r_angle.png":walls,
+    "t_l_angle.png":walls,
     
     "full_wall.png":fill
     

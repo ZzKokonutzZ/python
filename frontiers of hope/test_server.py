@@ -2,27 +2,40 @@ import pygame_network as pgn
 import numpy as np
 server=pgn.Server()
 
-server.sprites_player=[]
-server.sprites_player_coords=[]
-for i in range(100):
-    server.sprites_player.append("s")
-    server.sprites_player_coords+=[100*np.cos(i),100*np.sin(i)]
+server.players_sprites={}
+def new_circle() :
+    circle=[]
+    for i in range(100):
+        circle.append([250+100*np.cos(i),250+100*np.sin(i)])
+    return circle
 
-server.t=0
+def new_player_setup(self,n) :
+    holder=new_circle()
+    self.players_sprites[n]=[]
+    for i in range(len(holder)) :
+        self.players_sprites[n].append(self.create_object("s",holder[i]))
+
+
     
-def game_loop(self) :
-    for n in self.players :
-        for i in range(len(self.players[n].keys)) :
+def run_main(self) :
+    t=0
+    while 1 :
+        server.stop_updates()
+        for n in self.players :
+            server.keys_update(n)
+            for i in range(len(self.players[n].keys)) :
+                k=self.players[n].keys[i]
+                if k=='right' :
+                    t+=0.1
+                if k=='left' :
+                    t-=0.1
             
-            k=self.players[n].keys[i]
-            if k=='right' :
-                self.t+=0.1
-            if k=='left' :
-                self.t-=0.1
-            
-            for i in range(len(self.sprites_coords[n])//2) :
-                self.sprites_coords[n][2*i]=100*np.cos(i+self.t)+250
-                self.sprites_coords[n][2*i+1]=100*np.sin(i+self.t)+250
+                for i in range(len(self.players_sprites[n])) :
+                    assert len(self.players_sprites[n][i])==2, self.players_sprites[n][i]
+                    self.players_sprites[n][i][1][0]=100*np.cos(i+t)+250
+                    self.players_sprites[n][i][1][1]=100*np.sin(i+t)+250
+        server.accept_new_players()
 
-server.game_loop=game_loop
+server.new_player_setup=new_player_setup
+server.run_main=run_main
 server.run()

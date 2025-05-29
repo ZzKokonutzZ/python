@@ -1,5 +1,5 @@
-# import pygame as pg
-# import sys
+import pygame as pg
+import sys
 from random import randint,choices
 
 
@@ -34,8 +34,7 @@ class Tile() :
     
     # sets the tile list to the buffer
     def update(self) :
-        holder = [e for e in self.buffer]
-        self.tiles = holder
+        self.tiles = [e for e in self.buffer]
 
 class Grid() :
     def __init__(self,x=10,y=10,tiles_indexes=[],dependencies={"up":{},"down":{},"right":{},"left":{}},distribution={}):
@@ -87,7 +86,7 @@ class Grid() :
         while len(self.unstable_keys) > 0 and self.grid[self.unstable_keys[0]] == 1 :
             self.unstable_keys.pop(0)
     
-    ########## sets the grid back to it's initial state #############
+    ########## sets the grid back to its initial state #############
     def reset_grid(self):
         self.grid = {}
         self.keys = []
@@ -102,7 +101,7 @@ class Grid() :
         self.update_uncertainty()
             
     ####### removes every tile not matching with coords_elements from coords_a buffer 
-    def compare(self, coords_a,pos,coords_b) :
+    def ajust(self, coords_a,pos,coords_b) :
         
         trash=[]
         
@@ -119,22 +118,22 @@ class Grid() :
                         break
                 if not relation :
                     trash.append(e)
-                    
+        if len(self.grid[coords_a].buffer)-len(trash) <= 0 :
+            return "error : no tile can fit in this spot"        
         for e in trash :
             self.grid[coords_a].buffer.remove(e)
-            if len(self.grid[coords_a].buffer) <= 0 :
-                return "error : no tile can fit in this spot"
 
     ########## removes every non matching tiles from this tile's buffer ##################
     def reduce(self,coords) :
         check_pos = self.grid[coords].adjacent_tiles
         for pos in check_pos :
-            catch = self.compare(coords,pos,check_pos[pos])
-            if catch != None :
-                return catch
+            catch = self.ajust(coords,pos,check_pos[pos])
+        return catch
     
     ########## collapse one tile : set the tile at coords to a random element of its possible tiles #############
     def tile_collapse(self,coords) :
+        if not self.grid[coords].tiles:
+            return "error : tile has no options left"
         self.grid[coords].tiles = choices(self.grid[coords].tiles,weights=[self.distribution[e] for e in self.grid[coords].tiles])
         self.grid[coords].collapsed = True
     
@@ -151,8 +150,10 @@ class Grid() :
             self.grid[e].update()
             
         tile = self.unstable_keys.pop(0)
-        self.tile_collapse(tile)
-        
+        check=self.tile_collapse(tile)
+        if check :
+            print(check)
+            return "unsolvable tile pattern happened"
         self.update_uncertainty()
     
     ############ collapse the grid until it finds a fully solved arrangement #################
@@ -188,65 +189,65 @@ class Grid() :
 
 ###################################### examples #########################################################################################
 
-# pg.init()
-# screen=pg.display.set_mode((500,500))
+pg.init()
+screen=pg.display.set_mode((500,500))
 
 
-# colors=[(213,62,79),(244,109,67),(253,174,97),(254,224,139),(230,245,152),(171,221,164),(102,194,165),(50,136,189)]
+colors=[(213,62,79),(244,109,67),(253,174,97),(254,224,139),(230,245,152),(171,221,164),(102,194,165),(50,136,189)]
 
-# dependencies={"up":{},"down":{},"right":{},"left":{}}
-# keys=["up","down","right","left"]
+dependencies={"up":{},"down":{},"right":{},"left":{}}
+keys=["up","down","right","left"]
 
-# for e in keys:
-#     dependencies[e][0]=[0,1]
-#     dependencies[e][7]=[6,7]
-#     for i in range(1,7) :
-#         dependencies[e][i]=[i-1,i,i+1]
+for e in keys:
+    dependencies[e][0]=[0,1]
+    dependencies[e][7]=[6,7]
+    for i in range(1,7) :
+        dependencies[e][i]=[i-1,i,i+1]
         
-# side=50
+side=50
 
-# tilemap=Grid(side,side,[0,1,2,3,4,5,6,7],dependencies)
+tilemap=Grid(side,side,[0,1,2,3,4,5,6,7],dependencies)
 
-# tilemap.assign((side//2,side//2),3)
+tilemap.assign((side//2,side//2),3)
 
-# pix=500//side
+pix=500//side
 
-# ##### example 1 : showing the resolving process #####
-# def example1() :
-#     while 1 :
-#         screen.fill((0,0,0))
-#         for i in range(tilemap.xmax) :
-#             for j in range(tilemap.ymax) :
-#                 if tilemap.grid[(i,j)].collapsed :
-#                     pg.draw.rect(screen,colors[tilemap.grid[(i,j)].tiles[0]],(pix*i,pix*j,pix,pix))
-#                 else :
-#                     pg.draw.rect(screen,colors[tilemap.grid[(i,j)].tiles[0]],(pix*i,pix*j,pix,pix))
-#         pg.display.flip()
-#         if len(tilemap.unstable_keys)>0 :
-#             check=tilemap.grid_collapse()
-#             if check!=None :
-#                 print(check)
-#                 tilemap.reset_grid()
-#         for event in pg.event.get() :
-#             if event.type==pg.QUIT :
-#                 pg.quit()
-#                 sys.exit()
+#### example 1 : showing the resolving process #####
+def example1() :
+    while 1 :
+        screen.fill((0,0,0))
+        for i in range(tilemap.xmax) :
+            for j in range(tilemap.ymax) :
+                if tilemap.grid[(i,j)].collapsed :
+                    pg.draw.rect(screen,colors[tilemap.grid[(i,j)].tiles[0]],(pix*i,pix*j,pix,pix))
+                else :
+                    pg.draw.rect(screen,colors[tilemap.grid[(i,j)].tiles[0]],(pix*i,pix*j,pix,pix))
+        pg.display.flip()
+        if len(tilemap.unstable_keys)>0 :
+            check=tilemap.grid_collapse()
+            if check!=None :
+                print(check)
+                tilemap.reset_grid()
+        for event in pg.event.get() :
+            if event.type==pg.QUIT :
+                pg.quit()
+                sys.exit()
 
-# ##### example 2 : resolving the grid before showing #####
+#### example 2 : resolving the grid before showing #####
 
-# def example2() :
+def example2() :
     
-#     tilemap.global_collapse()
+    tilemap.global_collapse()
     
-#     while 1 :
-#         screen.fill((0,0,0))
-#         for e in tilemap.keys :
-#             pg.draw.rect(screen,colors[tilemap.grid[e].tiles],(pix*e[0],pix*e[1],pix,pix))
-#         pg.display.flip()
-#         for event in pg.event.get() :
-#             if event.type==pg.QUIT :
-#                 pg.quit()
-#                 sys.exit()
+    while 1 :
+        screen.fill((0,0,0))
+        for e in tilemap.keys :
+            pg.draw.rect(screen,colors[tilemap.grid[e].tiles],(pix*e[0],pix*e[1],pix,pix))
+        pg.display.flip()
+        for event in pg.event.get() :
+            if event.type==pg.QUIT :
+                pg.quit()
+                sys.exit()
 
 # ########################################################################################################################
-# example1()
+#example1()

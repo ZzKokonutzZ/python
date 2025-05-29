@@ -10,20 +10,22 @@ FORMAT="utf-8"
 
 
 def send(msg,channel) :
-    # print("[SENDING]",end='')
-    # print(msg)
     msg=pickle.dumps(msg)
     header=str(len(msg)).encode(FORMAT)+b' '*(HEADER-len(str(len(msg)).encode(FORMAT)))
     channel.send(header)
     channel.send(msg)
 
-def recieve(channel) :
-    # print("[RECIEVING]",end='')
-    size=int(channel.recv(HEADER).decode(FORMAT))
-    msg=channel.recv(size)
-    msg=pickle.loads(msg)
-    # print(msg)
-    return msg
+def recieve(channel):
+    size = int(channel.recv(HEADER).decode(FORMAT).strip())
+    data = b""
+    while len(data) < size:
+        packet = channel.recv(size - len(data)).strip()
+        if not packet:
+            break
+        data += packet
+    if len(data)>0 :
+        msg = pickle.loads(data)
+        return msg
 
 
 class Server() :
@@ -37,47 +39,55 @@ class Server() :
         print(f"server opened with address {self.SERVER_IP}")
         self.players={}
         self.nb_players=0
-        self.sprites={}
-        self.sprites_player=[]
-        self.sprites_coords={}
-        self.sprites_player_coords=[]
-        self.k_update=0
-        
+        self.sprites=[]
+        self.new_players_buffer=0
+    
+    def create_object(self,sprite,coords) :
+        self.sprites.append([sprite,coords])
+        return self.sprites[-1]
+            
+    
     class player() :
         def __init__(self) :
             self.keys=[]
+            self.keys_buffer=[]
             
-    def game_loop(self) :
+    def run_main(self):
         pass
     
-    def define_variables(self) :
-        pass
+    def keys_update(self,n) :
+        self.players[n].keys=self.players[n].keys_buffer[:]
     
+    def accept_new_players(self):
+        self.new_players_buffer=1
         
+    def stop_updates(self) :
+        self.new_players_buffer=0
+    
+    def new_player_setup(self,n) :
+        pass
+    
     def run(self) :
         def update_player(n,channel) :
+            while not self.new_players_buffer :
+                pass
             connected=1
             self.players[n]=self.player()
-            self.sprites[n]=self.sprites_player
-            self.sprites_coords[n]=self.sprites_player_coords
-            # print(self.sprites)
             send(n,channel)
             print("player rank sent")
+            self.nb_players+=1
+            self.new_player_setup(self,n)
             while connected :
                 run=int(recieve(channel))
                 if run :
-                    keys=recieve(channel)
-                    for e in "['] ":
-                        keys=keys.replace(e,'')
-                    keys=keys.split(',')
-                    while not self.k_update :
-                        pass
-                    self.players[n].keys=keys
-                    send(str(self.sprites[n]).replace(' ',''),channel)
-                    send(str(self.sprites_coords[n]).replace(' ',''),channel)
+                    self.players[n].keys_buffer=recieve(channel)
+                    #for i in range(len(self.sprites)) :
+                        #print(self.sprites[i])
+                    send(self.sprites,channel)
                 else :
                     connected=0
                     del self.players[n]
+                    self.nb_players-=1
         
         def connection_update() :
             n=0
@@ -88,11 +98,8 @@ class Server() :
                 n+=1
         threading.Thread(target=connection_update).start()
         
-        while 1 :
-            self.k_update=0
-            self.game_loop(self)
-            self.k_update=1
-            CLOCK.tick(60)
+        self.run_main(self)
+
 
 class Client() :
     def __init__(self) :
@@ -113,23 +120,11 @@ class Client() :
         send(1,self.main)
         print("setup done")
         while running :
-            send(str(keys).replace(' ',''),self.main)
-            sprites=recieve(self.main).replace('[','')
-            coords=recieve(self.main).replace('[','')
-            
-            for e in "[']" :
-                sprites=sprites.replace(e,'')
-                coords=coords.replace(e,'')
-            
-            sprites=sprites.split(',')
-            coords=coords.split(',')
-            for i in range(len(coords)) :
-                coords[i]=float(coords[i])
+            send(keys,self.main)
+            sprites=recieve(self.main)
             self.screen.fill((0,0,0))
-            i=0
-            for e in sprites :
-                self.screen.blit(self.sprites_memory[e],(coords[i],coords[i+1]))
-                i+=2
+            for i in range(len(sprites)) :
+                self.screen.blit(self.sprites_memory[sprites[i][0]],tuple(sprites[i][1]))
             pg.display.flip()
             
             events=pg.event.get()
